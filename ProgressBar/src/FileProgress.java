@@ -1,6 +1,4 @@
-import java.awt.GraphicsConfiguration;
-import java.awt.GridLayout;
-import java.awt.HeadlessException;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
@@ -18,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 
-public class FileProgress extends JFrame implements Runnable,ActionListener {
+public class FileProgress extends JFrame{
 
 	JPanel jp;
 	JProgressBar jpb;
@@ -45,8 +43,66 @@ public class FileProgress extends JFrame implements Runnable,ActionListener {
 		copyButton=new JButton("START");
 		stopButton=new JButton("STOP");
 		
-		copyButton.addActionListener(this);
-		stopButton.addActionListener(this);
+		copyButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				
+				String inFile=fromName.getText();
+				String outFile=toName.getText();
+				
+				File in=new File(inFile);
+				File out=new File(outFile);
+				byte input[]=new byte[10];
+				
+				int total=0,rcount=0,tcount=0;
+				try {
+					out.createNewFile();
+					inBuffer=new BufferedInputStream(new FileInputStream(in));
+					outBuffer=new BufferedOutputStream(new FileOutputStream(out));
+					total=inBuffer.available();
+					while((rcount=inBuffer.read(input))!=-1) {
+						outBuffer.write(input);
+						tcount+=rcount;
+						jpb.setValue((int)(tcount*100)/total);
+					}
+					
+					inBuffer.close();
+					outBuffer.close();
+					
+					
+					
+				} catch (IOException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+
+				
+			}
+		});
+		stopButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				
+					try {
+					
+						if(inBuffer!=null)
+							inBuffer.close();
+						if(outBuffer!=null)
+							outBuffer.close();
+						inBuffer=new BufferedInputStream(new FileInputStream(toName.getText()));
+						Scanner content=new Scanner(inBuffer);
+						while(content.hasNextLine()) {
+							System.out.println(content.nextLine());
+						}
+					}catch (IOException except) {
+						// TODO: handle exception
+						except.printStackTrace();
+					}
+					
+					
+				
+			}
+		});
 		
 		add(fromLabel);add(fromName);
 		add(toLabel);add(toName);
@@ -55,66 +111,6 @@ public class FileProgress extends JFrame implements Runnable,ActionListener {
 		
 	}
 	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		if(e.getSource()==copyButton) {
-			run();
-		}
-		else if(e.getSource()==stopButton) {
-			try {
-			
-				if(inBuffer!=null)
-					inBuffer.close();
-				if(outBuffer!=null)
-					outBuffer.close();
-				inBuffer=new BufferedInputStream(new FileInputStream(toName.getText()));
-				Scanner content=new Scanner(inBuffer);
-				while(content.hasNextLine()) {
-					System.out.println(content.nextLine());
-				}
-			}catch (IOException except) {
-				// TODO: handle exception
-				except.printStackTrace();
-			}
-			
-			
-		}
-	}
-
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		String inFile=fromName.getText();
-		String outFile=toName.getText();
-		
-		File in=new File(inFile);
-		File out=new File(outFile);
-		byte input[]=new byte[10];
-		
-		int total=0,rcount=0,tcount=0;
-		try {
-			out.createNewFile();
-			inBuffer=new BufferedInputStream(new FileInputStream(in));
-			outBuffer=new BufferedOutputStream(new FileOutputStream(out));
-			total=inBuffer.available();
-			while((rcount=inBuffer.read(input))!=-1) {
-				outBuffer.write(input);
-				tcount+=rcount;
-				jpb.setValue((int)(tcount*100)/total);
-			}
-			
-			inBuffer.close();
-			outBuffer.close();
-			
-			
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
